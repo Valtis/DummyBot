@@ -17,12 +17,13 @@ public class DummyBot {
 
     public static void main(String[] args) throws InterruptedException, IOException {
         //connects to port 51291 of localhost
-        Socket sock = connect("127.0.0.1", 51291);
-        
+        int port = Integer.parseInt(args[0]);
+        Socket sock = connect("127.0.0.1", port);
+
         //initialize reader and writer for the socket
         PrintWriter write = new PrintWriter(sock.getOutputStream());
         BufferedReader read = new BufferedReader(new InputStreamReader(sock.getInputStream()));
-        
+
         String line;
         //while(true) should be sufficient - the server automatically ends processes
         while (true) {
@@ -30,7 +31,7 @@ public class DummyBot {
             while (!(line = read.readLine()).isEmpty()) {
                 //do what you will with the line
             }
-            
+
             //make a random move
             double rand = Math.random();
             write.append("move ");
