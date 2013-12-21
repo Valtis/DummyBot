@@ -16,8 +16,8 @@ public class DummyBot {
     //dummy bot for BombestMan - just runs around randomly
 
     public static void main(String[] args) throws InterruptedException, IOException {
-        //connects to port 51291 of localhost
-        int port = Integer.parseInt(args[0]);
+        int botId = Integer.parseInt(args[0]);
+        int port = Integer.parseInt(args[1]);
         Socket sock = connect("127.0.0.1", port);
 
         //initialize reader and writer for the socket

@@ -4,4 +4,4 @@
 # for the ease of trying, well also compile java now. but when compiling takes time, use of compile.sh is recommended
 
 javac DummyBot.java
-java DummyBot $1
+java DummyBot $1 $2
