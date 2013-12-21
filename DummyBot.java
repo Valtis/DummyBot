@@ -1,12 +1,10 @@
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.SocketException;
+import java.util.Random;
 
 /**
  *
@@ -33,12 +31,8 @@ public class DummyBot {
             }
 
             //make a random move
-            double rand = Math.random();
-            write.append("move ");
-            write.append(rand < 0.25 ? "u" :
-                         rand < 0.5  ? "r" :
-                         rand < 0.75 ? "d" :
-                                       "l");
+            String[] commands = {"move u", "move d", "move l", "move r", "bomb", "wait"};
+            write.append(commands[new Random().nextInt(commands.length)]);
             //line break signals end of the command
             write.append("\n");
             //finally, flush the writer
