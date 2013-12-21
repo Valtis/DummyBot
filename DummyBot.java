@@ -4,12 +4,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
-/**
- *
- * @author kviiri
- */
 public class DummyBot {
     //dummy bot for BombestMan - just runs around randomly
 
@@ -23,16 +21,23 @@ public class DummyBot {
         BufferedReader read = new BufferedReader(new InputStreamReader(sock.getInputStream()));
 
         String line;
+        List<String> lines = new ArrayList<String>();
+        Bot bot = new StateMachineBot();
+
+
         //while(true) should be sufficient - the server automatically ends processes
+
         while (true) {
+
+
             //read lines from the server until an empty line is delivered
             while (!(line = read.readLine()).isEmpty()) {
-                //do what you will with the line
+               lines.add(line);
             }
 
-            //make a random move
-            String[] commands = {"move u", "move d", "move l", "move r", "bomb", "wait"};
-            write.append(commands[new Random().nextInt(commands.length)]);
+            String command = bot.GetCommand(lines);
+
+            write.append(command);
             //line break signals end of the command
             write.append("\n");
             //finally, flush the writer
