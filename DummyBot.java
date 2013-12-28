@@ -6,7 +6,6 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class DummyBot {
     //dummy bot for BombestMan - just runs around randomly
@@ -25,8 +24,8 @@ public class DummyBot {
         Bot bot = new StateMachineBot();
 
 
-        //while(true) should be sufficient - the server automatically ends processes
-
+       //while(true) should be sufficient - the server automatically ends processes
+        boolean isInitialized = false;
         while (true) {
 
 
@@ -35,7 +34,18 @@ public class DummyBot {
                lines.add(line);
             }
 
-            String command = bot.GetCommand(lines);
+            if (lines.isEmpty()) {
+                continue;
+            }
+
+            if (!isInitialized) {
+                isInitialized = true;
+                GameState.getInstance().initializeGameData(botId, lines);
+
+                continue;
+            }
+
+            String command = bot.getCommand(lines);
 
             write.append(command);
             //line break signals end of the command
