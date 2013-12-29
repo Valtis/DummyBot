@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.List;
 
 // todo: refactor this
@@ -21,6 +22,10 @@ public class GameState {
         gameData = new GameData(botID, lines);
     }
 
+    public void updateGameData(List<String> lines) {
+        gameData.updateLevel(lines);
+    }
+
     public boolean isValid(Point point) {
         return !(point == null || point.x < 0 || point.x >= gameData.WIDTH
                 || point.y < 0 || point.y >= gameData.HEIGHT);
@@ -34,35 +39,123 @@ public class GameState {
         return gameData.BOMB_FORCE;
     }
 
+
+
     public boolean isInsideBombExplosionRadius(Point point) {
+        if (point == null) {
+            return false;
+        }
+        // check x-axis to right
+        for (int x = point.x + 1; x <= point.x + gameData.BOMB_FORCE; ++x) {
+            if (x >= gameData.WIDTH) {
+                break;
+            }
+
+            if (TileType.stopsExplosion(gameData.gameField[x][point.y])) {
+                break;
+            }
+            if (gameData.tileHasBomb(x, point.y)) {
+                return true;
+            }
+        }
+
+        // check x-axis to left
+        for (int x = point.x - 1; x >= point.x + gameData.BOMB_FORCE; --x) {
+            if (x < 0) {
+                break;
+            }
+
+            if (TileType.stopsExplosion(gameData.gameField[x][point.y])) {
+                break;
+            }
+            if (gameData.tileHasBomb(x, point.y)) {
+                return true;
+            }
+        }
+
+        // check y-axis downwards
+        for (int y = point.y + 1; y <= point.y + gameData.BOMB_FORCE; ++y) {
+            if (y >= gameData.HEIGHT) {
+                break;
+            }
+
+            if (TileType.stopsExplosion(gameData.gameField[point.x][y])) {
+                break;
+            }
+
+            if (gameData.tileHasBomb(point.x, y)) {
+                return true;
+            }
+        }
+
+        // check y-axis upwards
+        for (int y = point.x - 1; y >= point.y + gameData.BOMB_FORCE; --y) {
+            if (y < 0) {
+                break;
+            }
+
+            if (TileType.stopsExplosion(gameData.gameField[point.x][y])) {
+                break;
+            }
+
+            if (gameData.tileHasBomb(point.x, y)) {
+                return true;
+            }
+        }
+
         return false;
     }
 
     public boolean isInsideBombExplosionRadius(int id) {
-        return false;
+        return isInsideBombExplosionRadius(getBotPosition(id));
     }
 
     // returns 99999 if no enemy present
-    public int closestEnemyDistance(int id) {
-        return 99999;
+    public double getClosestEnemyDistance(int id) {
+        Point myPosition = getBotPosition(id);
+        Point p = getClosestEnemy(id);
+        if (p == null) {
+            return 99999;
+        }
+
+        return Math.pow(myPosition.x + p.x, 2) + Math.pow(myPosition.y + p.y, 2);
+    }
+
+
+    public Point getClosestEnemy(int id) {
+        Point myPosition = getBotPosition(id);
+        Point enemyPoint = null;
+        double distance = 99999;
+
+        for (int i = 0; i < gameData.BOMBER_COUNT; ++i) {
+            if (i == id) {
+                continue;
+            }
+
+            Point p = getBotPosition(i);
+            if (p != null) {
+                double temp = Math.pow(myPosition.x + p.x, 2) + Math.pow(myPosition.y + p.y, 2);
+
+                if (temp < distance) {
+                    distance = temp;
+                    enemyPoint = p;
+                }
+            }
+        }
+        return enemyPoint;
     }
 
     public Point getClosestWall(int id) {
-        return null;
+       return gameData.getClosestOfType(getBotPosition(id), TileType.getCharRepresentation(TileType.SOFTBLOCK));
     }
-
-    public Point getClosetEnemyPosition(int id) {
-        return null;
-    }
-
 
     // returns null if no treasure present
     public Point getClosestTreasure(int id) {
-        return null;
+        return gameData.getClosestOfType(getBotPosition(id), TileType.getCharRepresentation(TileType.TREASURE));
     }
 
     public Point getBotPosition(int id) {
-        return null;
+        return gameData.getBotPosition(id);
     }
 
     public char [][] getGameField() {
@@ -72,12 +165,4 @@ public class GameState {
     public TileType getTileType(Point point) {
         return TileType.getType(gameData.gameField[point.x][point.y]);
     }
-
-    public static void ParseGameState() {
-
-        
-    }
-
-
-
 }

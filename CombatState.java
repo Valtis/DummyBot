@@ -1,5 +1,3 @@
-import java.util.Queue;
-
 public class CombatState extends BotState {
     public final static int COMBAT_DISTANCE = 4;
 
@@ -20,12 +18,12 @@ public class CombatState extends BotState {
         Point closestTreasure = GameState.getInstance().getClosestTreasure(id);
 
         // if closest enemy is further away than combat distance AND there are walls or treasures, switch to treasure hunting state
-        if (GameState.getInstance().closestEnemyDistance(id) > COMBAT_DISTANCE && (closestTreasure != null || closestWall != null)) {
+        if (GameState.getInstance().getClosestEnemyDistance(id) > COMBAT_DISTANCE && (closestTreasure != null || closestWall != null)) {
             nextState = new TreasureHuntState();
             return Move.REDO;
         }
 
-        Point closestEnemy = GameState.getInstance().getClosetEnemyPosition(id);
+        Point closestEnemy = GameState.getInstance().getClosestEnemy(id);
         Point myPosition = GameState.getInstance().getBotPosition(id);
 
         // check if closest enemy is inside bomb explosion radius - if so, drop a bomb and switch to AvoidExplosionState

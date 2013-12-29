@@ -21,7 +21,7 @@ public class DummyBot {
 
         String line;
         List<String> lines = new ArrayList<String>();
-        Bot bot = new StateMachineBot();
+        Bot bot = new StateMachineBot(botId);
 
 
        //while(true) should be sufficient - the server automatically ends processes
@@ -43,6 +43,9 @@ public class DummyBot {
                 GameState.getInstance().initializeGameData(botId, lines);
 
                 continue;
+            } else {
+                GameState.getInstance().updateGameData(lines);
+
             }
 
             String command = bot.getCommand(lines);
@@ -52,6 +55,8 @@ public class DummyBot {
             write.append("\n");
             //finally, flush the writer
             write.flush();
+
+            lines.clear();
         }
     }
 
@@ -66,6 +71,5 @@ public class DummyBot {
                 System.err.println("Retrying connection...");
             }
         }
-
     }
 }

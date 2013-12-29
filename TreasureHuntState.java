@@ -28,7 +28,7 @@ public class TreasureHuntState extends BotState {
             return Move.REDO;
         }
 
-        path = AStar.calculatePath(GameState.getInstance().getGameField(), GameState.getInstance().getBotPosition(id), destination);
+        path = pathfinder.calculatePath(GameState.getInstance().getGameField(), GameState.getInstance().getBotPosition(id), destination);
 
         // no path
         if (path.isEmpty()) {

@@ -15,9 +15,11 @@ public enum TileType {
         return floorTile == '$' || floorTile == '.';
     }
 
-    @Override
-    public String toString() {
-        switch(this) {
+    public static boolean stopsExplosion(char tile) {
+        return tile == '$' || tile == '#' || tile == '?';
+    }
+    public static String getStringRepresentation(TileType type) {
+        switch(type) {
             case TREASURE:
                 return "$";
             case HARDBLOCK:
@@ -28,6 +30,10 @@ public enum TileType {
             default:
                 return ".";
         }
+    }
+
+    public static char getCharRepresentation(TileType type) {
+        return TileType.getStringRepresentation(type).charAt(0);
     }
 
     public static TileType getType(char floorTile) {

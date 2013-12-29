@@ -26,7 +26,9 @@
       */
 
 
+    import java.util.HashSet;
     import java.util.List;
+    import java.util.Set;
 
     public class GameData {
 
@@ -46,8 +48,11 @@
 
         public char [][] gameField;
 
+        private Set<Point> bombLocations;
+
 
         public GameData(int botID, List<String> lines) {
+            bombLocations = new HashSet<Point>();
             BOT_ID = botID;
 
             int pos = 1;
@@ -79,12 +84,78 @@
         }
 
         public void updateLevel(List<String> lines) {
-            for (int i = 0; i < WIDTH; ++i) {
+            // update
+            int linePos = 1;
+            for (int i = 0; i < WIDTH; ++i, ++linePos) {
                 for (int j = 0; j < HEIGHT; ++i) {
-                    gameField[i][j] = lines.get(i).charAt(j);
+                    gameField[i][j] = lines.get(linePos).charAt(j);
                 }
             }
+
+            bombLocations.clear();
+            // update bomb locations
+            for (; linePos < lines.size(); ++linePos) {
+                String [] tokens = lines.get(linePos).split(" ");
+                if (tokens.length == 0) {
+                    continue;
+                }
+                // example: bomb at 0,10 (owned by 1)
+                if (tokens[0].equals("bomb")) {
+                    String [] posTokens = tokens[2].split(",");
+                    if (posTokens.length != 2) {
+                        throw new RuntimeException("Check bomb parsing code, something odd going on");
+                    }
+
+                    bombLocations.add(new Point(Integer.parseInt(posTokens[0]), Integer.parseInt(posTokens[1])));
+
+                }
+            }
+
         }
 
+        public boolean tileHasBomb(int x, int y) {
+            return bombLocations.contains(new Point(x, y));
+        }
+
+        public Point getBotPosition(int id) {
+            if (id < 0 || id > 9) {
+                throw new RuntimeException("Invalid bot id. Id must be a number between 0 - 9");
+            }
+            String temp = "" + id;
+            for (int x = 0; x < WIDTH; ++x) {
+                for (int y = 0; y < HEIGHT; ++y) {
+                    if (gameField[x][y] == temp.charAt(0)) {
+                        return new Point(x, y);
+                    }
+                }
+            }
+            return null;
+        }
+
+        public Point getClosestOfType(Point point, char type) {
+            int curX = 0;
+            int curY = 0;
+            double distance = 99999.0;
+
+            for (int x = 0; x < WIDTH; ++x) {
+                for (int y = 0; y < HEIGHT; ++y) {
+                    if (gameField[x][y] == type) {
+                        double temp = Math.pow(point.x - x, 2) + Math.pow(point.y - y, 2);
+                        if (temp < distance) {
+                            distance = temp;
+                            curX = x;
+                            curY = y;
+                        }
+                    }
+                }
+
+            }
+
+            if (Math.abs(distance - 99999.0) < 0.0001) {
+                return null;
+            }
+
+            return new Point(curX, curY);
+        }
 
 }

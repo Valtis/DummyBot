@@ -2,12 +2,19 @@ import java.util.Queue;
 
 public abstract class BotState {
 
+    protected Pathfinder pathfinder;
     protected Point destination;
     protected Queue<Move> path;
     protected BotState nextState;
     public abstract Move execute(int id);
+
     public BotState getNextState() {
         return nextState;
+    }
+
+    public BotState()
+    {
+        pathfinder = new AStar();
     }
 
     protected boolean CheckForBombsAndEnemies(int id) {
@@ -15,7 +22,7 @@ public abstract class BotState {
         if (GameState.getInstance().isInsideBombExplosionRadius(id)) {
             nextState = new AvoidExplosionState();
             return true;
-        } else if (GameState.getInstance().closestEnemyDistance(id) < CombatState.COMBAT_DISTANCE) {
+        } else if (GameState.getInstance().getClosestEnemyDistance(id) < CombatState.COMBAT_DISTANCE) {
             nextState = new CombatState();
             return true;
         }
@@ -41,7 +48,7 @@ public abstract class BotState {
                     continue;
                 }
 
-                path = AStar.calculatePath(GameState.getInstance().getGameField(), targetLocation, destination);
+                path = pathfinder.calculatePath(GameState.getInstance().getGameField(), targetLocation, destination);
             }
 
             if (!path.isEmpty()) {
