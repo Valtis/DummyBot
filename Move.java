@@ -1,5 +1,6 @@
 
 public enum Move {
+    NONE,
     WAIT,
     MOVE_UP,
     MOVE_DOWN,

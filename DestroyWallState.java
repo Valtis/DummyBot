@@ -1,8 +1,7 @@
 import java.util.Queue;
 
 public class DestroyWallState extends BotState {
-    private Point wallLocation;
-    Queue<Move> path;
+
     @Override
     public Move execute(int id) {
         if (CheckForBombsAndEnemies(id)) {
@@ -18,27 +17,42 @@ public class DestroyWallState extends BotState {
         // check if we are close enough to the tile - todo: add logic to check that the tile is actually reachable!
         Point myLocation = GameState.getInstance().getBotPosition(id);
 
-        if ((myLocation.x == wallLocation.x && Math.abs(myLocation.y - wallLocation.y) < GameState.getInstance().getBombExplosionRadius()) ||
-                myLocation.y == wallLocation.y && Math.abs(myLocation.x - wallLocation.x) < GameState.getInstance().getBombExplosionRadius()) {
+        int explosionRadius = GameState.getInstance().getBombExplosionRadius();
+        if (isOnSameLineAndCloseEnough(myLocation, destination, explosionRadius)) {
+            nextState = new AvoidExplosionState(); // have to escape from the bomb
             return Move.BOMB;
+
         }
 
-
-        // check if a path already exists and if the end point is still valid
-
-
-
+        // check if a path already exists and if the end point is still valid - todo: similar code exists in multiple states - extract to base class? DRY princible being violated
+        if (path != null && !path.isEmpty() && GameState.getInstance().getTileType(destination) == TileType.SOFTBLOCK) {
+            Point nextPoint = Move.getNextPoint(GameState.getInstance().getBotPosition(id), path.peek());
+            if (!GameState.getInstance().isInsideBombExplosionRadius(nextPoint)) {
+                return path.poll();
+            }
+            return Move.WAIT; // bomb explosion area ahead - wait for it to explode
+        }
 
 
         // calculate new path
 
-        Point wall = GameState.getInstance().getClosestWall(id);
+        destination = GameState.getInstance().getClosestWall(id);
+
+        if (destination == null) {
+            // uh, ran out of walls. I guess should move to combat then
+            nextState = new CombatState();
+            return Move.REDO;
+        }
 
 
+        calculatePathToAClosePoint(destination, explosionRadius);
 
-        // check position x-wise if we can drop a bomb there
 
+        if (!path.isEmpty()) {
+            return path.poll();
+        }
 
         return Move.WAIT;
     }
+
 }

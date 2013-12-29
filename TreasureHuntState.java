@@ -2,8 +2,7 @@
 import java.util.Queue;
 
 public class TreasureHuntState extends BotState {
-    private Queue<Move> path = null;
-    private Point destinationTile = null;
+
     @Override
     public Move execute(int id) {
         if (CheckForBombsAndEnemies(id)) {
@@ -13,7 +12,7 @@ public class TreasureHuntState extends BotState {
         nextState = this;
 
         // check if we have a valid path to a treasure - if so, continue moving towards it
-        if (path != null && !path.isEmpty() && GameState.getInstance().getTileType(destinationTile) == TileType.TREASURE) {
+        if (path != null && !path.isEmpty() && GameState.getInstance().getTileType(destination) == TileType.TREASURE) {
             Point nextPoint = Move.getNextPoint(GameState.getInstance().getBotPosition(id), path.peek());
             if (!GameState.getInstance().isInsideBombExplosionRadius(nextPoint)) {
                 return path.poll();
@@ -22,14 +21,14 @@ public class TreasureHuntState extends BotState {
         }
 
 
-        Point treasure = GameState.getInstance().getClosestTreasure(id);
+        destination = GameState.getInstance().getClosestTreasure(id);
 
-        if (treasure == null) {
+        if (destination == null) {
             nextState = new DestroyWallState();
             return Move.REDO;
         }
 
-        path = AStar.calculatePath(GameState.getInstance().getGameField(), GameState.getInstance().getBotPosition(id), treasure);
+        path = AStar.calculatePath(GameState.getInstance().getGameField(), GameState.getInstance().getBotPosition(id), destination);
 
         // no path
         if (path.isEmpty()) {
