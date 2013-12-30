@@ -9,8 +9,6 @@ public class TreasureHuntState extends BotState {
             return Move.REDO;
         }
 
-        nextState = this;
-
         // check if we have a valid path to a treasure - if so, continue moving towards it
         if (path != null && !path.isEmpty() && GameState.getInstance().getTileType(destination) == TileType.TREASURE) {
             Point nextPoint = Move.getNextPoint(GameState.getInstance().getBotPosition(id), path.peek());

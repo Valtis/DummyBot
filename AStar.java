@@ -147,6 +147,7 @@ public class AStar implements Pathfinder {
 
         while (n.getComeFrom() != null) {
             moves.add(n.getMoveDirection());
+            assert(lookup.containsKey(n.getComeFrom()));
             n = lookup.get(n.getComeFrom());
         }
         return moves;

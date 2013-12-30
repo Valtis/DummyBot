@@ -1,15 +1,19 @@
+import java.util.LinkedList;
 import java.util.Queue;
 
 public class DestroyWallState extends BotState {
 
     @Override
     public Move execute(int id) {
+
         if (CheckForBombsAndEnemies(id)) {
             return Move.REDO;
         }
 
-        // if treasures are near, switch to treasure hunt mode
-        if (GameState.getInstance().getClosestTreasure(id) != null) {
+        // if there are treasures that are reachable, switch to treasure hunt mode
+        Point closestTreasure = GameState.getInstance().getClosestTreasure(id);
+        if (closestTreasure != null &&
+                pathfinder.calculatePath(GameState.getInstance().getGameField(), GameState.getInstance().getBotPosition(id), closestTreasure).size() != 0) {
             nextState = new TreasureHuntState();
             return Move.REDO;
         }
@@ -18,7 +22,7 @@ public class DestroyWallState extends BotState {
         Point myLocation = GameState.getInstance().getBotPosition(id);
 
         int explosionRadius = GameState.getInstance().getBombExplosionRadius();
-        if (isOnSameLineAndCloseEnough(myLocation, destination, explosionRadius)) {
+        if (myLocation != null && destination != null && isOnSameLineAndCloseEnough(myLocation, destination, explosionRadius)) {
             nextState = new AvoidExplosionState(); // have to escape from the bomb
             return Move.BOMB;
 
@@ -44,9 +48,20 @@ public class DestroyWallState extends BotState {
             return Move.REDO;
         }
 
+        if (path == null) {
+            path = new LinkedList<Move>();
+        } else {
+            path.clear();
+        }
+        Point myPoint = GameState.getInstance().getBotPosition(id);
 
-        calculatePathToAClosePoint(destination, explosionRadius);
+        for (int x = destination.x - explosionRadius, y = destination.y - explosionRadius; path.isEmpty() && x <= destination.x + explosionRadius && y <= destination.y + explosionRadius; ++x, ++y) {
+            path = pathfinder.calculatePath(GameState.getInstance().getGameField(), myPoint, new Point(x, destination.y));
 
+            if (path.isEmpty()) {
+                path = pathfinder.calculatePath(GameState.getInstance().getGameField(), myPoint, new Point(destination.x, y));
+            }
+        }
 
         if (!path.isEmpty()) {
             return path.poll();

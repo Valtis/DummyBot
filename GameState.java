@@ -118,7 +118,7 @@ public class GameState {
             return 99999;
         }
 
-        return Math.pow(myPosition.x + p.x, 2) + Math.pow(myPosition.y + p.y, 2);
+        return Math.abs(myPosition.x - p.x) + Math.abs(myPosition.y - p.y); // manhattan distance
     }
 
 
@@ -134,7 +134,7 @@ public class GameState {
 
             Point p = getBotPosition(i);
             if (p != null) {
-                double temp = Math.pow(myPosition.x + p.x, 2) + Math.pow(myPosition.y + p.y, 2);
+                double temp = Math.abs(myPosition.x - p.x) + Math.abs(myPosition.y - p.y); // manhattan distance
 
                 if (temp < distance) {
                     distance = temp;

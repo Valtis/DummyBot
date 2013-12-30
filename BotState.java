@@ -14,7 +14,8 @@ public abstract class BotState {
 
     public BotState()
     {
-        pathfinder = new AStar();
+        pathfinder = new BreadthFirstSearch();
+        nextState = this;
     }
 
     protected boolean CheckForBombsAndEnemies(int id) {
@@ -41,18 +42,20 @@ public abstract class BotState {
             path.clear();
         }
 
-        for (destination.x = targetLocation.x - searchAreaSize; destination.x <= targetLocation.x + searchAreaSize; ++destination.x ) {
+        Point temp = new Point(Math.max(0, targetLocation.x - searchAreaSize), Math.max(0, targetLocation.y - searchAreaSize));
 
-            for (destination.y = targetLocation.y - searchAreaSize; destination.y <= targetLocation.y + searchAreaSize; ++destination.y) {
-                if (!GameState.getInstance().isValid(destination) || !GameState.getInstance().isPassable(destination) || GameState.getInstance().isInsideBombExplosionRadius(destination)) {
+        for (; temp.x <= targetLocation.x + searchAreaSize; ++temp.x ) {
+
+            for (; temp.y <= targetLocation.y + searchAreaSize; ++temp.y) {
+                if (!GameState.getInstance().isValid(temp) || !GameState.getInstance().isPassable(temp) || GameState.getInstance().isInsideBombExplosionRadius(temp)) {
                     continue;
                 }
 
-                path = pathfinder.calculatePath(GameState.getInstance().getGameField(), targetLocation, destination);
-            }
-
-            if (!path.isEmpty()) {
-                break;
+                path = pathfinder.calculatePath(GameState.getInstance().getGameField(), targetLocation, temp);
+                if (!path.isEmpty()) { // just pick first valid path
+                    destination = temp;
+                    break;
+                }
             }
         }
     }

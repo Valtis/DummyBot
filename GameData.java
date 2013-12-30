@@ -43,7 +43,7 @@
         public final int BOMB_TIMER_SIDES;
         public final int BOMB_FORCE;
         public final int TURNS;
-        public final int TREASURE_CHANGE;
+        public final double TREASURE_CHANGE;
         public final int INITIAL_COUNT_OF_BOMBS;
 
         public char [][] gameField;
@@ -56,8 +56,8 @@
             BOT_ID = botID;
 
             int pos = 1;
-            WIDTH = Integer.parseInt(lines.get(pos++).split(" ")[1]);
-            HEIGHT = Integer.parseInt(lines.get(pos++).split(" ")[1]);
+            WIDTH = Integer.parseInt(lines.get(pos++).split(" ")[2]);
+            HEIGHT = Integer.parseInt(lines.get(pos++).split(" ")[2]);
             BOMBER_COUNT = Integer.parseInt(lines.get(pos++).split(" ")[1]);
             POINTS_PER_TREASURE = Integer.parseInt(lines.get(pos++).split(" ")[1]);
             POINTS_LOST_FOR_DYING = Integer.parseInt(lines.get(pos++).split(" ")[1]);
@@ -66,7 +66,7 @@
             BOMB_TIMER_SIDES = Integer.parseInt(lines.get(pos++).split(" ")[1]);
             BOMB_FORCE = Integer.parseInt(lines.get(pos++).split(" ")[1]);
             TURNS = Integer.parseInt(lines.get(pos++).split(" ")[1]);
-            TREASURE_CHANGE = Integer.parseInt(lines.get(pos++).split(" ")[1]);
+            TREASURE_CHANGE = Double.parseDouble(lines.get(pos++).split(" ")[1]);
             INITIAL_COUNT_OF_BOMBS = Integer.parseInt(lines.get(pos++).split(" ")[1]);
 
 
@@ -76,8 +76,8 @@
             for (int i = 0; i < WIDTH; ++i) {
                 ++pos;
                 gameField[i] = new char[HEIGHT];
-                for (int j = 0; j < HEIGHT; ++i) {
-                    gameField[i][j] = lines.get(i).charAt(j);
+                for (int j = 0; j < HEIGHT; ++j) {
+                    gameField[i][j] = lines.get(pos).charAt(j);
                 }
             }
 
@@ -87,7 +87,8 @@
             // update
             int linePos = 1;
             for (int i = 0; i < WIDTH; ++i, ++linePos) {
-                for (int j = 0; j < HEIGHT; ++i) {
+                System.out.println(lines.get(linePos));
+                for (int j = 0; j < HEIGHT; ++j) {
                     gameField[i][j] = lines.get(linePos).charAt(j);
                 }
             }
@@ -140,7 +141,7 @@
             for (int x = 0; x < WIDTH; ++x) {
                 for (int y = 0; y < HEIGHT; ++y) {
                     if (gameField[x][y] == type) {
-                        double temp = Math.pow(point.x - x, 2) + Math.pow(point.y - y, 2);
+                        double temp = Math.abs(point.x - x) + Math.abs(point.y - y); // use manhattan distance
                         if (temp < distance) {
                             distance = temp;
                             curX = x;

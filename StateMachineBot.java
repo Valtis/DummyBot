@@ -38,11 +38,21 @@ public class StateMachineBot extends Bot {
     private void updateState() {
         int counter = 0;
 
+        // we have no position - we are dead
+        if (GameState.getInstance().getBotPosition(MY_ID) == null) {
+            currentMove = Move.WAIT;
+            return;
+        }
+
+
         do {
             ++counter;
             currentMove = currentState.execute(MY_ID);
             currentState = currentState.getNextState();
         } while (counter <= 5 && currentMove == Move.REDO); // somewhat terrible way handle state transitions - if state is changed, bot needs to re-evaluate its position
 
+        if (currentMove == Move.REDO) {
+            currentMove = Move.WAIT;
+        }
     }
 }
