@@ -65,8 +65,8 @@ public class AStar implements Pathfinder {
         }
     }
 
-    public Queue<Move> calculatePath(char[][] field, Point start, Point destination) {
-
+    public Queue<Move> calculatePath(Point start, Point destination) {
+/*
         PriorityQueue<Node> queue = new PriorityQueue<Node>();
 
         HashSet<Point> closedSet = new HashSet<Point>();
@@ -85,7 +85,7 @@ public class AStar implements Pathfinder {
         }
 
 
-        // no path found - return empty path to signal this
+        // no path found - return empty path to signal this*/
         return new LinkedList<Move>();
     }
     // could be prettier

@@ -22,9 +22,15 @@ public abstract class BotState {
         // check if we have to avoid bombs or enemies
         if (GameState.getInstance().isInsideBombExplosionRadius(id)) {
             nextState = new AvoidExplosionState();
+            DebugWriter.write("Threatened by a bomb - switching to AvoidExplosionState()\n");
             return true;
-        } else if (GameState.getInstance().getClosestEnemyDistance(id) < CombatState.COMBAT_DISTANCE) {
+        }
+
+        // check if bot is both reachable and close
+        Queue<Move> temp = pathfinder.calculatePath(GameState.getInstance().getBotPosition(id), GameState.getInstance().getClosestEnemy(id));
+        if (!temp.isEmpty() && temp.size() < CombatState.COMBAT_DISTANCE) {
             nextState = new CombatState();
+            DebugWriter.write("Threatened by a bot - switching to CombatState()\n");
             return true;
         }
         return false;
@@ -37,26 +43,39 @@ public abstract class BotState {
     }
 
 
-    protected void calculatePathToAClosePoint(Point targetLocation, int searchAreaSize) {
+    protected void calculatePathToAClosePoint(Point startLocation, Point targetLocation, int searchAreaSize) {
         if (path != null) {
             path.clear();
         }
 
-        Point temp = new Point(Math.max(0, targetLocation.x - searchAreaSize), Math.max(0, targetLocation.y - searchAreaSize));
+        Point temp = new Point(0, 0);
 
-        for (; temp.x <= targetLocation.x + searchAreaSize; ++temp.x ) {
+        for (temp.x = targetLocation.x - searchAreaSize; temp.x <= targetLocation.x + searchAreaSize; ++temp.x ) {
 
-            for (; temp.y <= targetLocation.y + searchAreaSize; ++temp.y) {
+            for (temp.y = targetLocation.y - searchAreaSize ; temp.y <= targetLocation.y + searchAreaSize; ++temp.y) {
                 if (!GameState.getInstance().isValid(temp) || !GameState.getInstance().isPassable(temp) || GameState.getInstance().isInsideBombExplosionRadius(temp)) {
                     continue;
                 }
-
-                path = pathfinder.calculatePath(GameState.getInstance().getGameField(), targetLocation, temp);
+                path = pathfinder.calculatePath(startLocation, temp);
                 if (!path.isEmpty()) { // just pick first valid path
                     destination = temp;
                     break;
                 }
             }
+
+            if (path != null && !path.isEmpty()) {
+                break;
+            }
         }
+    }
+
+    protected Move  MoveOrWaitForBomb(int id) {
+        Point nextPoint = Move.getNextPoint(GameState.getInstance().getBotPosition(id), path.peek());
+        if (!GameState.getInstance().isInsideBombExplosionRadius(nextPoint)) {
+            DebugWriter.write("Moving using old path to " + nextPoint + "\n");
+            return path.poll();
+        }
+        DebugWriter.write("Bomb blocking next movement - waiting\n");
+        return Move.WAIT; // bomb explosion area ahead - wait for it to explode
     }
 }

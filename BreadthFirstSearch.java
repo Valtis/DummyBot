@@ -21,13 +21,34 @@ public class BreadthFirstSearch implements Pathfinder {
             } else {
                 return Move.MOVE_DOWN;
             }
-
         }
+
+        @Override
+        public int hashCode() {
+            return location.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o.getClass() != this.getClass()) {
+                return false;
+            }
+
+            return ((Node)o).location.equals(this.location);
+        }
+
     }
 
     @Override
-    public Queue<Move> calculatePath(char[][] field, Point start, Point destination) {
+    public Queue<Move> calculatePath(Point start, Point destination) {
         Map<Point, Node> handledNodes = new HashMap<Point, Node>();
+        DebugWriter.write("  Pathfinder: Calculating path from " + start + " to " + destination + "\n");
+
+        if (!GameState.getInstance().isValid(destination) || !GameState.getInstance().isPassable(destination)) {
+            DebugWriter.write("  Pathfinder: Destination tile either not valid or is not reachable\n");
+            return new LinkedList<Move>();
+        }
+
 
         Queue<Node> queue = new LinkedList<Node>();
         Node n = new Node(start, null);
@@ -36,6 +57,7 @@ public class BreadthFirstSearch implements Pathfinder {
         while (!queue.isEmpty()) {
             n = queue.poll();
             if (n.location.equals(destination)) {
+                DebugWriter.write("  Pathfinder: Constructing path\n");
                 return ConstructPath(n, handledNodes);
             }
 
@@ -68,8 +90,14 @@ public class BreadthFirstSearch implements Pathfinder {
     }
 
     void HandleNeighbourNode(Point newLocation, Point oldLocation, Queue<Node> queue, Map<Point, Node> handledNodes) {
+
+        if (!GameState.getInstance().isValid(newLocation) || !GameState.getInstance().isPassable(newLocation)) {
+            return;
+        }
+
         Node neighbour;
         neighbour = new Node(newLocation, oldLocation);
+
         if (queue.contains(neighbour) || handledNodes.containsKey(newLocation)) {
             return;
         }
@@ -78,14 +106,14 @@ public class BreadthFirstSearch implements Pathfinder {
 
 
     Queue<Move> ConstructPath(Node n, Map<Point, Node> handledNodes) {
-        Queue<Move> moves = new LinkedList<Move>();
+        LinkedList<Move> moves = new LinkedList<Move>();
 
         while (n.comeFrom != null) {
             moves.add(n.getMoveDirection());
             n = handledNodes.get(n.comeFrom);
         }
 
-
+        Collections.reverse(moves);
         return moves;
     }
 }

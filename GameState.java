@@ -17,6 +17,22 @@ public class GameState {
         return instance;
     }
 
+    public void debugPrint() {
+        DebugWriter.write("****DEBUG PRINT GAMEWORLD ****\n");
+        for (int y = 0; y < gameData.HEIGHT; ++y) {
+            for (int x = 0; x < gameData.WIDTH; ++x) {
+                DebugWriter.write(""+gameData.gameField[y][x]);
+            }
+            DebugWriter.write("\n");
+        }
+        DebugWriter.write("****DEBUG END****\n");
+
+    }
+
+    public int manhattanDistance(Point a, Point b) {
+        return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+    }
+
 
     public void initializeGameData(int botID, List<String> lines) {
         gameData = new GameData(botID, lines);
@@ -32,7 +48,7 @@ public class GameState {
     }
 
     public boolean isPassable(Point point) {
-        return TileType.passable(gameData.gameField[point.x][point.y]);
+        return TileType.passable(gameData.gameField[point.y][point.x]);
     }
 
     public int getBombExplosionRadius() {
@@ -42,16 +58,16 @@ public class GameState {
 
 
     public boolean isInsideBombExplosionRadius(Point point) {
-        if (point == null) {
+        if (point == null || !isValid(point)) {
             return false;
         }
         // check x-axis to right
-        for (int x = point.x + 1; x <= point.x + gameData.BOMB_FORCE; ++x) {
+        for (int x = point.x ; x <= point.x + gameData.BOMB_FORCE+2; ++x) {
             if (x >= gameData.WIDTH) {
                 break;
             }
 
-            if (TileType.stopsExplosion(gameData.gameField[x][point.y])) {
+            if (TileType.stopsExplosion(gameData.gameField[point.y][x])) {
                 break;
             }
             if (gameData.tileHasBomb(x, point.y)) {
@@ -60,12 +76,12 @@ public class GameState {
         }
 
         // check x-axis to left
-        for (int x = point.x - 1; x >= point.x + gameData.BOMB_FORCE; --x) {
+        for (int x = point.x - 1; x >= point.x - gameData.BOMB_FORCE-1; --x) {
             if (x < 0) {
                 break;
             }
 
-            if (TileType.stopsExplosion(gameData.gameField[x][point.y])) {
+            if (TileType.stopsExplosion(gameData.gameField[point.y][x])) {
                 break;
             }
             if (gameData.tileHasBomb(x, point.y)) {
@@ -74,12 +90,12 @@ public class GameState {
         }
 
         // check y-axis downwards
-        for (int y = point.y + 1; y <= point.y + gameData.BOMB_FORCE; ++y) {
+        for (int y = point.y + 1; y <= point.y + gameData.BOMB_FORCE+1; ++y) {
             if (y >= gameData.HEIGHT) {
                 break;
             }
 
-            if (TileType.stopsExplosion(gameData.gameField[point.x][y])) {
+            if (TileType.stopsExplosion(gameData.gameField[y][point.x])) {
                 break;
             }
 
@@ -89,12 +105,12 @@ public class GameState {
         }
 
         // check y-axis upwards
-        for (int y = point.x - 1; y >= point.y + gameData.BOMB_FORCE; --y) {
+        for (int y = point.y - 1; y >= point.y- gameData.BOMB_FORCE-1; --y) {
             if (y < 0) {
                 break;
             }
 
-            if (TileType.stopsExplosion(gameData.gameField[point.x][y])) {
+            if (TileType.stopsExplosion(gameData.gameField[y][point.x])) {
                 break;
             }
 
@@ -111,21 +127,36 @@ public class GameState {
     }
 
     // returns 99999 if no enemy present
-    public double getClosestEnemyDistance(int id) {
+    public int getClosestEnemyDistance(int id) {
         Point myPosition = getBotPosition(id);
         Point p = getClosestEnemy(id);
         if (p == null) {
             return 99999;
         }
 
-        return Math.abs(myPosition.x - p.x) + Math.abs(myPosition.y - p.y); // manhattan distance
+        return manhattanDistance(myPosition, p);
+    }
+
+    // returns 99999 if no bomb present
+    public int getClosestBombDistance(int id) {
+        List<Point> bombLocations= gameData.getBombPositions();
+        int distance = 99999;
+        Point myLocation = getBotPosition(id);
+        for (Point p : bombLocations) {
+            int temp = manhattanDistance(p, myLocation);
+            if (temp < distance) {
+                distance = temp;
+            }
+        }
+
+        return distance;
     }
 
 
     public Point getClosestEnemy(int id) {
         Point myPosition = getBotPosition(id);
         Point enemyPoint = null;
-        double distance = 99999;
+        int distance = 99999;
 
         for (int i = 0; i < gameData.BOMBER_COUNT; ++i) {
             if (i == id) {
@@ -134,7 +165,7 @@ public class GameState {
 
             Point p = getBotPosition(i);
             if (p != null) {
-                double temp = Math.abs(myPosition.x - p.x) + Math.abs(myPosition.y - p.y); // manhattan distance
+                int temp = manhattanDistance(p, myPosition);
 
                 if (temp < distance) {
                     distance = temp;
@@ -163,6 +194,6 @@ public class GameState {
     }
 
     public TileType getTileType(Point point) {
-        return TileType.getType(gameData.gameField[point.x][point.y]);
+        return TileType.getType(gameData.gameField[point.y][point.x]);
     }
 }

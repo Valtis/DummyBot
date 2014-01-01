@@ -16,7 +16,7 @@ public enum TileType {
     }
 
     public static boolean stopsExplosion(char tile) {
-        return tile == '$' || tile == '#' || tile == '?';
+        return tile == '#' || tile == '?';
     }
     public static String getStringRepresentation(TileType type) {
         switch(type) {

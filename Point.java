@@ -21,4 +21,9 @@ public class Point {
     public int hashCode() {
             return 51 * x + 51 * y;
     }
+
+    @Override
+    public String toString() {
+        return "" + x + ":" + y;
+    }
 }

@@ -3,7 +3,7 @@ public class CombatState extends BotState {
 
     @Override
     public Move execute(int id) {
-
+        DebugWriter.write("\nEntering CombatState\n");
 
         // if this is null, no walls are remaining. If no treasures are on the ground either, remain in combat state forever
 
@@ -11,6 +11,7 @@ public class CombatState extends BotState {
         // check for bombs
         if (GameState.getInstance().isInsideBombExplosionRadius(id)) {
             nextState = new AvoidExplosionState();
+            DebugWriter.write("Threatened by a bomb - switching to AvoidExplosionState()\n");
             return Move.REDO;
         }
 
@@ -20,6 +21,8 @@ public class CombatState extends BotState {
         // if closest enemy is further away than combat distance AND there are walls or treasures, switch to treasure hunting state
         if (GameState.getInstance().getClosestEnemyDistance(id) > COMBAT_DISTANCE && (closestTreasure != null || closestWall != null)) {
             nextState = new TreasureHuntState();
+
+            DebugWriter.write("No bots near and treasures or walls exist - switching to TreasureHuntState()\n");
             return Move.REDO;
         }
 
@@ -29,6 +32,7 @@ public class CombatState extends BotState {
         // check if closest enemy is inside bomb explosion radius - if so, drop a bomb and switch to AvoidExplosionState
         int explosionRadius = GameState.getInstance().getBombExplosionRadius();
         if (isOnSameLineAndCloseEnough(closestEnemy, myPosition, explosionRadius)) {
+            DebugWriter.write("Closest enemy is within bomb explosion radius - dropping bomb and switching to AvoidExplosionState()\n");
             nextState = new AvoidExplosionState();
             return Move.BOMB;
         }
@@ -36,20 +40,20 @@ public class CombatState extends BotState {
 
         // check if we have a valid path, and follow it if we do. TODO: extract this code to a method, multiple states use similar code
         if (path != null && !path.isEmpty()) {
-            Point nextPoint = Move.getNextPoint(GameState.getInstance().getBotPosition(id), path.peek());
-            if (!GameState.getInstance().isInsideBombExplosionRadius(nextPoint)) {
-                return path.poll();
-            }
-            return Move.WAIT; // bomb explosion area ahead - wait for it to explode
+            return MoveOrWaitForBomb(id);
         }
 
 
         // no valid path - calculate a path to position near enemy position
-        calculatePathToAClosePoint(closestEnemy, explosionRadius);
+        calculatePathToAClosePoint(myPosition, closestEnemy, explosionRadius);
 
-        if (!path.isEmpty()) {
-            return path.poll();
+        DebugWriter.write("No valid path - calculating new one\n");
+
+        if (path != null &&  !path.isEmpty()) {
+            return MoveOrWaitForBomb(id);
         }
+
+        DebugWriter.write("No valid path exists - waiting\n");
 
         return Move.WAIT;
     }
